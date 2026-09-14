@@ -37,7 +37,12 @@
 
         /* ═══════════════════ RESET ═══════════════════ */
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-        html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 24px); }
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: calc(var(--header-h) + 24px);
+            -webkit-overflow-scrolling: touch;          /* momentum scrolling on iOS */
+            overscroll-behavior-y: none;                 /* no bounce / pull-to-refresh jank */
+        }
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-root);
@@ -45,6 +50,7 @@
             line-height: 1.75;
             font-size: 15px;
             overflow-x: hidden;
+            touch-action: pan-y;                         /* only vertical scroll, no jank */
         }
         ::selection { background: rgba(129,140,248,.35); color:#fff; }
 
@@ -52,18 +58,29 @@
         #progress {
             position: fixed; top:0; left:0; height:3px; z-index:1000;
             background: linear-gradient(90deg, var(--accent-1), var(--accent-3), var(--accent-6));
-            width: 0%; transition: width .15s linear;
-            box-shadow: 0 0 12px var(--accent-1);
+            width: 100%;
+            transform: scaleX(0);                        /* start empty */
+            transform-origin: left;                      /* grow from left edge */
+            will-change: transform;                      /* GPU-promoted, no repaints */
+            contain: layout style;                       /* isolate from layout thrash */
         }
 
         /* ═══════════════════ TOP BAR ═══════════════════ */
         .topbar {
             position: fixed; top:0; left:0; right:0; height: var(--header-h); z-index:900;
             display:flex; align-items:center; padding:0 24px; gap:14px;
-            background: rgba(10,10,15,.82);
-            backdrop-filter: blur(18px) saturate(1.6);
-            -webkit-backdrop-filter: blur(18px) saturate(1.6);
+            background: rgba(10,10,15,.94);
             border-bottom: 1px solid var(--border-subtle);
+            will-change: transform;                      /* compositor layer */
+            contain: layout style;
+        }
+        /* backdrop-filter only on devices that handle it well (pointer:fine = desktop) */
+        @media (pointer: fine) {
+            .topbar {
+                background: rgba(10,10,15,.82);
+                backdrop-filter: blur(18px) saturate(1.6);
+                -webkit-backdrop-filter: blur(18px) saturate(1.6);
+            }
         }
         .topbar .logo {
             font-weight:800; font-size:1.1rem; letter-spacing:-.3px;
@@ -197,9 +214,12 @@
             border-radius: var(--radius);
             padding: 28px 32px;
             margin-bottom: 1.5rem;
-            transition: border-color .3s ease;
         }
-        .day-section:hover { border-color: var(--border); }
+        /* hover only on devices with a real pointer (not touch) */
+        @media (hover: hover) and (pointer: fine) {
+            .day-section { transition: border-color .3s ease; }
+            .day-section:hover { border-color: var(--border); }
+        }
 
         h3 {
             font-size:1.22rem; font-weight:700; letter-spacing:-.3px;
@@ -291,20 +311,25 @@
             padding:.5rem .85rem; border-bottom:1px solid var(--border-subtle);
             color:var(--text-dim);
         }
-        tr:hover td { background:rgba(255,255,255,.02); color:var(--text); }
+        @media (hover: hover) and (pointer: fine) {
+            tr:hover td { background:rgba(255,255,255,.02); color:var(--text); }
+        }
 
         /* ═══════════════════ BACK TO TOP ═══════════════════ */
         .back-to-top {
             position:fixed; bottom:28px; right:28px; z-index:900;
             width:44px; height:44px; border-radius:50%; border:1px solid var(--border);
-            background:rgba(17,17,24,.85); backdrop-filter:blur(12px);
+            background:rgba(17,17,24,.95);
             color:var(--text-dim); cursor:pointer; font-size:1.1rem;
             display:flex; align-items:center; justify-content:center;
             opacity:0; transform:translateY(16px);
-            transition: all .3s cubic-bezier(.4,0,.2,1);
+            transition: opacity .3s, transform .3s;     /* only animate what changes */
+            will-change: opacity, transform;
         }
         .back-to-top.visible { opacity:1; transform:translateY(0); }
-        .back-to-top:hover { background:var(--bg-elevated); color:var(--text); border-color:var(--accent-1); }
+        @media (hover: hover) and (pointer: fine) {
+            .back-to-top:hover { background:var(--bg-elevated); color:var(--text); border-color:var(--accent-1); }
+        }
 
         /* ═══════════════════ RESPONSIVE ═══════════════════ */
         @media (max-width: 900px) {
@@ -1309,40 +1334,53 @@ agents.mcp.server.stdio_client = functools.partial(
     const links    = document.querySelectorAll('.nav-link');
     const sections = [];
 
-    // Build section list from nav links
+    // Build section list; cache offsets so scroll handler avoids getBoundingClientRect
     links.forEach(a => {
         const id = a.getAttribute('href').slice(1);
         const el = document.getElementById(id);
         if(el) sections.push({id, el, link:a, title:a.textContent.trim()});
     });
 
-    // Scroll handler
+    // ── Lightweight scroll handler (runs in rAF, does NO layout reads that cause reflow) ──
     let ticking = false;
+    let prevActive = null;
+    let sidebarTimer = null;   // debounce sidebar scrollIntoView
+
     window.addEventListener('scroll', () => {
         if(!ticking){ requestAnimationFrame(onScroll); ticking=true; }
-    });
+    }, {passive:true});        // passive: browser can scroll without waiting for JS
 
     function onScroll(){
         ticking = false;
         const scrollY = window.scrollY;
         const docH    = document.documentElement.scrollHeight - window.innerHeight;
-        const pct     = docH > 0 ? (scrollY / docH) * 100 : 0;
-        progress.style.width = pct + '%';
+
+        // Progress bar — set via transform for GPU compositing (no width reflow)
+        const pct = docH > 0 ? (scrollY / docH) : 0;
+        progress.style.transform = 'scaleX(' + pct + ')';
 
         // Back to top
         topBtn.classList.toggle('visible', scrollY > 500);
 
-        // Active section
+        // Active section — use offsetTop (cached by engine) instead of getBoundingClientRect
+        const threshold = scrollY + 120;
         let current = sections[0];
-        for(const s of sections){
-            if(s.el.getBoundingClientRect().top < 120) current = s;
+        for(let i = sections.length - 1; i >= 0; i--){
+            if(sections[i].el.offsetTop <= threshold){ current = sections[i]; break; }
         }
-        links.forEach(l => l.classList.remove('active'));
-        if(current){
+
+        // Only touch DOM when active section actually changes
+        if(current && current !== prevActive){
+            if(prevActive) prevActive.link.classList.remove('active');
             current.link.classList.add('active');
             label.textContent = current.title;
-            // scroll sidebar to keep active link visible
-            current.link.scrollIntoView({block:'nearest', behavior:'smooth'});
+            prevActive = current;
+
+            // Debounced sidebar scroll — NOT on every frame, only after 150ms idle
+            clearTimeout(sidebarTimer);
+            sidebarTimer = setTimeout(() => {
+                current.link.scrollIntoView({block:'nearest', behavior:'auto'});
+            }, 150);
         }
     }
 
