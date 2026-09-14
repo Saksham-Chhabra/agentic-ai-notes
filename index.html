@@ -151,12 +151,6 @@
             margin-bottom: 3rem;
             position:relative;
         }
-        .cover-section::before {
-            content:''; position:absolute; inset:0; z-index:0;
-            background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(129,140,248,.08), transparent 70%),
-                        radial-gradient(ellipse 50% 40% at 70% 60%, rgba(244,114,182,.06), transparent 60%);
-            pointer-events:none;
-        }
         .cover-section > * { position:relative; z-index:1; }
         .cover-section h1 {
             font-size: 4rem; font-weight:900; letter-spacing:-2px; line-height:1.05;
@@ -178,7 +172,11 @@
         }
 
         /* ═══════════════════ WEEK HEADER ═══════════════════ */
-        .week-block { margin-bottom: 3.5rem; }
+        .week-block {
+            margin-bottom: 3.5rem;
+            content-visibility: auto;          /* skip rendering off-screen weeks */
+            contain-intrinsic-size: auto 800px; /* estimated height so scrollbar stays stable */
+        }
         .week-title {
             padding: 28px 32px; border-radius: var(--radius);
             margin-bottom: 2rem; position:relative; overflow:hidden;
@@ -214,6 +212,9 @@
             border-radius: var(--radius);
             padding: 28px 32px;
             margin-bottom: 1.5rem;
+            contain: content;                    /* isolate layout + paint */
+            content-visibility: auto;            /* skip painting when off-screen */
+            contain-intrinsic-size: auto 400px;  /* estimated height */
         }
         /* hover only on devices with a real pointer (not touch) */
         @media (hover: hover) and (pointer: fine) {
@@ -274,15 +275,10 @@
         pre {
             background: var(--bg-code);
             border:1px solid var(--border-subtle);
+            border-top: 1px solid color-mix(in srgb, var(--week-color, var(--accent-1)) 40%, transparent);
             border-radius: var(--radius);
             padding:.9rem 1.1rem; overflow-x:auto;
             margin:.55rem 0 1rem; font-size:.82rem; line-height:1.6;
-            position:relative;
-        }
-        pre::before {
-            content:''; position:absolute; top:0; left:0; right:0; height:1px;
-            background:linear-gradient(90deg, var(--week-color, var(--accent-1)) 0%, transparent 100%);
-            opacity:.4;
         }
         code {
             font-family:'JetBrains Mono','Fira Code',monospace; font-size:.82rem;
@@ -1332,74 +1328,87 @@ agents.mcp.server.stdio_client = functools.partial(
     const sidebar  = document.getElementById('sidebar');
     const label    = document.getElementById('sectionLabel');
     const links    = document.querySelectorAll('.nav-link');
-    const sections = [];
 
-    // Build section list; cache offsets so scroll handler avoids getBoundingClientRect
-    links.forEach(a => {
-        const id = a.getAttribute('href').slice(1);
-        const el = document.getElementById(id);
-        if(el) sections.push({id, el, link:a, title:a.textContent.trim()});
-    });
-
-    // ── Lightweight scroll handler (runs in rAF, does NO layout reads that cause reflow) ──
+    // ── 1. SCROLL HANDLER: only progress bar + back-to-top (no section tracking) ──
     let ticking = false;
-    let prevActive = null;
-    let sidebarTimer = null;   // debounce sidebar scrollIntoView
+    let topVisible = false;
 
     window.addEventListener('scroll', () => {
-        if(!ticking){ requestAnimationFrame(onScroll); ticking=true; }
-    }, {passive:true});        // passive: browser can scroll without waiting for JS
+        if(!ticking){ requestAnimationFrame(onScroll); ticking = true; }
+    }, {passive:true});
 
     function onScroll(){
         ticking = false;
         const scrollY = window.scrollY;
-        const docH    = document.documentElement.scrollHeight - window.innerHeight;
+        const docH = document.documentElement.scrollHeight - window.innerHeight;
+        progress.style.transform = 'scaleX(' + (docH > 0 ? scrollY / docH : 0) + ')';
 
-        // Progress bar — set via transform for GPU compositing (no width reflow)
-        const pct = docH > 0 ? (scrollY / docH) : 0;
-        progress.style.transform = 'scaleX(' + pct + ')';
-
-        // Back to top
-        topBtn.classList.toggle('visible', scrollY > 500);
-
-        // Active section — use offsetTop (cached by engine) instead of getBoundingClientRect
-        const threshold = scrollY + 120;
-        let current = sections[0];
-        for(let i = sections.length - 1; i >= 0; i--){
-            if(sections[i].el.offsetTop <= threshold){ current = sections[i]; break; }
-        }
-
-        // Only touch DOM when active section actually changes
-        if(current && current !== prevActive){
-            if(prevActive) prevActive.link.classList.remove('active');
-            current.link.classList.add('active');
-            label.textContent = current.title;
-            prevActive = current;
-
-            // Debounced sidebar scroll — NOT on every frame, only after 150ms idle
-            clearTimeout(sidebarTimer);
-            sidebarTimer = setTimeout(() => {
-                current.link.scrollIntoView({block:'nearest', behavior:'auto'});
-            }, 150);
+        const shouldShow = scrollY > 500;
+        if(shouldShow !== topVisible){
+            topBtn.classList.toggle('visible', shouldShow);
+            topVisible = shouldShow;
         }
     }
 
+    // ── 2. INTERSECTION OBSERVER: active nav tracking (runs OFF main thread) ──
+    const linkMap = {};  // id → {link, title}
+    links.forEach(a => {
+        const id = a.getAttribute('href').slice(1);
+        linkMap[id] = {link: a, title: a.textContent.trim()};
+    });
+
+    let prevLink = null;
+    let sidebarTimer = null;
+
+    const observer = new IntersectionObserver(entries => {
+        // Find the topmost visible section
+        let best = null;
+        let bestTop = Infinity;
+        for(const entry of entries){
+            if(entry.isIntersecting && entry.boundingClientRect.top < bestTop){
+                bestTop = entry.boundingClientRect.top;
+                best = entry.target;
+            }
+        }
+        if(!best) return;
+
+        const info = linkMap[best.id];
+        if(!info || info.link === prevLink) return;
+
+        if(prevLink) prevLink.classList.remove('active');
+        info.link.classList.add('active');
+        label.textContent = info.title;
+        prevLink = info.link;
+
+        clearTimeout(sidebarTimer);
+        sidebarTimer = setTimeout(() => {
+            info.link.scrollIntoView({block:'nearest', behavior:'auto'});
+        }, 200);
+    }, {
+        rootMargin: '-' + (parseInt(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 56) + 'px 0px -60% 0px',
+        threshold: 0
+    });
+
+    // Observe every element that has a nav link
+    Object.keys(linkMap).forEach(id => {
+        const el = document.getElementById(id);
+        if(el) observer.observe(el);
+    });
+
+    // ── 3. UI HANDLERS ──
     topBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
 
-    // Mobile menu
     menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
     document.addEventListener('click', e => {
         if(window.innerWidth <= 900 && !sidebar.contains(e.target) && e.target !== menuBtn){
             sidebar.classList.remove('open');
         }
     });
-
-    // Close sidebar on nav click (mobile)
     links.forEach(a => a.addEventListener('click', () => {
         if(window.innerWidth <= 900) sidebar.classList.remove('open');
     }));
 
-    // Initial
+    // Initial progress
     onScroll();
 })();
 </script>
