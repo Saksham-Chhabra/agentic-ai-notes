@@ -1,0 +1,1369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentic AI — Complete Course Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════ TOKENS ═══════════════════ */
+        :root {
+            --bg-root:      #0a0a0f;
+            --bg-surface:   #111118;
+            --bg-card:      #16161f;
+            --bg-elevated:  #1c1c28;
+            --bg-code:      #0d0d14;
+            --border:       #2a2a3a;
+            --border-subtle:#1e1e2c;
+            --text:         #e4e4ef;
+            --text-dim:     #8888a0;
+            --text-muted:   #5a5a72;
+            --accent-1:     #818cf8; /* indigo  */
+            --accent-2:     #a78bfa; /* violet  */
+            --accent-3:     #f472b6; /* pink    */
+            --accent-4:     #22d3ee; /* cyan    */
+            --accent-5:     #34d399; /* emerald */
+            --accent-6:     #fbbf24; /* amber   */
+            --glow-1:       rgba(129,140,248,.12);
+            --glow-2:       rgba(167,139,250,.12);
+            --glow-3:       rgba(244,114,182,.12);
+            --glow-4:       rgba(34,211,238,.12);
+            --glow-5:       rgba(52,211,153,.12);
+            --glow-6:       rgba(251,191,36,.12);
+            --sidebar-w:    260px;
+            --header-h:     56px;
+            --radius:       10px;
+        }
+
+        /* ═══════════════════ RESET ═══════════════════ */
+        *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: calc(var(--header-h) + 24px); }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-root);
+            color: var(--text);
+            line-height: 1.75;
+            font-size: 15px;
+            overflow-x: hidden;
+        }
+        ::selection { background: rgba(129,140,248,.35); color:#fff; }
+
+        /* ═══════════════════ PROGRESS BAR ═══════════════════ */
+        #progress {
+            position: fixed; top:0; left:0; height:3px; z-index:1000;
+            background: linear-gradient(90deg, var(--accent-1), var(--accent-3), var(--accent-6));
+            width: 0%; transition: width .15s linear;
+            box-shadow: 0 0 12px var(--accent-1);
+        }
+
+        /* ═══════════════════ TOP BAR ═══════════════════ */
+        .topbar {
+            position: fixed; top:0; left:0; right:0; height: var(--header-h); z-index:900;
+            display:flex; align-items:center; padding:0 24px; gap:14px;
+            background: rgba(10,10,15,.82);
+            backdrop-filter: blur(18px) saturate(1.6);
+            -webkit-backdrop-filter: blur(18px) saturate(1.6);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+        .topbar .logo {
+            font-weight:800; font-size:1.1rem; letter-spacing:-.3px;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-3));
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+            background-clip:text;
+        }
+        .topbar .logo span { font-weight:400; opacity:.7; }
+        .topbar .section-label {
+            margin-left:auto; font-size:.82rem; color:var(--text-dim); font-weight:500;
+            max-width:400px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+        }
+        .hamburger {
+            display:none; background:none; border:none; color:var(--text); cursor:pointer;
+            width:36px; height:36px; font-size:1.25rem; border-radius:8px;
+        }
+        .hamburger:hover { background:var(--bg-elevated); }
+
+        /* ═══════════════════ SIDEBAR ═══════════════════ */
+        .sidebar {
+            position: fixed; top: var(--header-h); left:0; bottom:0;
+            width: var(--sidebar-w); padding: 16px 0;
+            overflow-y: auto; z-index:800;
+            background: var(--bg-surface);
+            border-right: 1px solid var(--border-subtle);
+            transition: transform .3s cubic-bezier(.4,0,.2,1);
+        }
+        .sidebar::-webkit-scrollbar { width:4px; }
+        .sidebar::-webkit-scrollbar-track { background:transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+
+        .nav-group { margin-bottom: 6px; }
+        .nav-group-title {
+            display:flex; align-items:center; gap:8px;
+            padding: 8px 20px; font-size:.72rem; font-weight:700;
+            text-transform:uppercase; letter-spacing:1.2px; color:var(--text-muted);
+            cursor:default;
+        }
+        .nav-group-title .dot {
+            width:8px; height:8px; border-radius:50%; flex-shrink:0;
+        }
+        .nav-link {
+            display:block; padding:6px 20px 6px 36px; font-size:.84rem; font-weight:450;
+            color:var(--text-dim); text-decoration:none; border-left:3px solid transparent;
+            transition: all .2s ease;
+        }
+        .nav-link:hover {
+            color:var(--text); background:var(--bg-elevated);
+        }
+        .nav-link.active {
+            color:var(--text); background:var(--bg-elevated);
+            border-left-color: var(--accent-1);
+            font-weight:600;
+        }
+
+        /* ═══════════════════ MAIN CONTENT ═══════════════════ */
+        .main {
+            margin-left: var(--sidebar-w);
+            padding: calc(var(--header-h) + 32px) 48px 120px 48px;
+            max-width: calc(var(--sidebar-w) + 900px + 96px);
+        }
+
+        /* ═══════════════════ COVER ═══════════════════ */
+        .cover-section {
+            min-height: calc(100vh - var(--header-h) - 32px);
+            display:flex; flex-direction:column; justify-content:center; align-items:center;
+            text-align:center; padding: 4rem 2rem;
+            margin-bottom: 3rem;
+            position:relative;
+        }
+        .cover-section::before {
+            content:''; position:absolute; inset:0; z-index:0;
+            background: radial-gradient(ellipse 60% 50% at 50% 40%, rgba(129,140,248,.08), transparent 70%),
+                        radial-gradient(ellipse 50% 40% at 70% 60%, rgba(244,114,182,.06), transparent 60%);
+            pointer-events:none;
+        }
+        .cover-section > * { position:relative; z-index:1; }
+        .cover-section h1 {
+            font-size: 4rem; font-weight:900; letter-spacing:-2px; line-height:1.05;
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 35%, #f472b6 65%, #fbbf24 100%);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+            margin-bottom:.6rem;
+        }
+        .cover-section .subtitle {
+            font-size:1.15rem; font-weight:300; color:var(--text-dim);
+            max-width:550px; margin-bottom:2rem;
+        }
+        .cover-pills {
+            display:flex; flex-wrap:wrap; gap:8px; justify-content:center;
+        }
+        .cover-pills span {
+            padding:5px 14px; border-radius:100px; font-size:.78rem; font-weight:500;
+            background:var(--bg-elevated); border:1px solid var(--border);
+            color:var(--text-dim);
+        }
+
+        /* ═══════════════════ WEEK HEADER ═══════════════════ */
+        .week-block { margin-bottom: 3.5rem; }
+        .week-title {
+            padding: 28px 32px; border-radius: var(--radius);
+            margin-bottom: 2rem; position:relative; overflow:hidden;
+        }
+        .week-title::before {
+            content:''; position:absolute; inset:0; opacity:.07;
+            background:var(--week-color); pointer-events:none;
+        }
+        .week-title { border:1px solid color-mix(in srgb, var(--week-color) 25%, transparent); }
+        .week-title h2 {
+            font-size:1.65rem; font-weight:800; letter-spacing:-.5px;
+            color:var(--week-color); display:flex; align-items:center; gap:12px;
+        }
+        .week-title h2 .badge {
+            font-size:.65rem; padding:3px 10px; border-radius:100px; font-weight:700;
+            background:var(--week-color); color:var(--bg-root); letter-spacing:.5px;
+        }
+        .week-title .week-desc {
+            font-size:.88rem; color:var(--text-dim); margin-top:4px;
+        }
+
+        .week-1 { --week-color: var(--accent-1); --week-glow: var(--glow-1); }
+        .week-2 { --week-color: var(--accent-2); --week-glow: var(--glow-2); }
+        .week-3 { --week-color: var(--accent-3); --week-glow: var(--glow-3); }
+        .week-4 { --week-color: var(--accent-4); --week-glow: var(--glow-4); }
+        .week-5 { --week-color: var(--accent-5); --week-glow: var(--glow-5); }
+        .week-6 { --week-color: var(--accent-6); --week-glow: var(--glow-6); }
+
+        /* ═══════════════════ DAY SECTION ═══════════════════ */
+        .day-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            padding: 28px 32px;
+            margin-bottom: 1.5rem;
+            transition: border-color .3s ease;
+        }
+        .day-section:hover { border-color: var(--border); }
+
+        h3 {
+            font-size:1.22rem; font-weight:700; letter-spacing:-.3px;
+            color:var(--week-color, var(--accent-1));
+            margin-bottom:1rem; padding-bottom:.5rem;
+            border-bottom:1px solid var(--border-subtle);
+        }
+        h4 {
+            font-size:.95rem; font-weight:650; color:var(--text);
+            margin:1.3rem 0 .5rem;
+            display:flex; align-items:center; gap:8px;
+        }
+        h4::before {
+            content:''; width:6px; height:6px; border-radius:50%;
+            background:var(--week-color, var(--accent-1)); flex-shrink:0;
+        }
+
+        p { margin-bottom:.55rem; color:var(--text); }
+        ul, ol { margin:.35rem 0 .7rem 1.3rem; }
+        li { margin-bottom:.2rem; color:var(--text); }
+        strong { font-weight:650; color:#fff; }
+        em { color:var(--text-dim); }
+
+        /* ═══════════════════ CONCEPT BOX ═══════════════════ */
+        .concept {
+            background: var(--bg-elevated);
+            border:1px solid var(--border);
+            border-left:3px solid var(--week-color, var(--accent-1));
+            border-radius: 0 var(--radius) var(--radius) 0;
+            padding:.85rem 1.1rem; margin:.8rem 0;
+        }
+        .concept .concept-title {
+            font-weight:700; font-size:.75rem; text-transform:uppercase;
+            letter-spacing:.8px; margin-bottom:.3rem;
+            color:var(--week-color, var(--accent-1));
+        }
+
+        /* ═══════════════════ KEY TAKEAWAY ═══════════════════ */
+        .takeaway {
+            background: linear-gradient(135deg, rgba(129,140,248,.06), rgba(167,139,250,.04));
+            border:1px solid rgba(129,140,248,.2);
+            border-radius: var(--radius); padding:.85rem 1.1rem; margin:1rem 0;
+            position:relative;
+        }
+        .takeaway::before {
+            content:"\1F4A1  Key Takeaway"; display:block;
+            font-weight:700; font-size:.8rem; color:var(--accent-2); margin-bottom:.35rem;
+            letter-spacing:.3px;
+        }
+
+        /* ═══════════════════ CODE ═══════════════════ */
+        pre {
+            background: var(--bg-code);
+            border:1px solid var(--border-subtle);
+            border-radius: var(--radius);
+            padding:.9rem 1.1rem; overflow-x:auto;
+            margin:.55rem 0 1rem; font-size:.82rem; line-height:1.6;
+            position:relative;
+        }
+        pre::before {
+            content:''; position:absolute; top:0; left:0; right:0; height:1px;
+            background:linear-gradient(90deg, var(--week-color, var(--accent-1)) 0%, transparent 100%);
+            opacity:.4;
+        }
+        code {
+            font-family:'JetBrains Mono','Fira Code',monospace; font-size:.82rem;
+        }
+        p code, li code, td code {
+            background:var(--bg-elevated); padding:.12em .4em; border-radius:5px;
+            font-size:.84em; color:var(--accent-4); border:1px solid var(--border-subtle);
+        }
+        .kw { color:#c084fc; font-weight:600; }
+        .fn { color:#60a5fa; }
+        .st { color:#34d399; }
+        .cm { color:#5a5a72; font-style:italic; }
+        .dc { color:#fbbf24; }
+
+        /* ═══════════════════ TABLES ═══════════════════ */
+        table {
+            width:100%; border-collapse:collapse; margin:.8rem 0; font-size:.86rem;
+            border-radius:var(--radius); overflow:hidden;
+        }
+        th {
+            background:var(--bg-elevated); color:var(--text);
+            padding:.6rem .85rem; text-align:left; font-weight:600; font-size:.82rem;
+            border-bottom:2px solid var(--week-color, var(--accent-1));
+        }
+        td {
+            padding:.5rem .85rem; border-bottom:1px solid var(--border-subtle);
+            color:var(--text-dim);
+        }
+        tr:hover td { background:rgba(255,255,255,.02); color:var(--text); }
+
+        /* ═══════════════════ BACK TO TOP ═══════════════════ */
+        .back-to-top {
+            position:fixed; bottom:28px; right:28px; z-index:900;
+            width:44px; height:44px; border-radius:50%; border:1px solid var(--border);
+            background:rgba(17,17,24,.85); backdrop-filter:blur(12px);
+            color:var(--text-dim); cursor:pointer; font-size:1.1rem;
+            display:flex; align-items:center; justify-content:center;
+            opacity:0; transform:translateY(16px);
+            transition: all .3s cubic-bezier(.4,0,.2,1);
+        }
+        .back-to-top.visible { opacity:1; transform:translateY(0); }
+        .back-to-top:hover { background:var(--bg-elevated); color:var(--text); border-color:var(--accent-1); }
+
+        /* ═══════════════════ RESPONSIVE ═══════════════════ */
+        @media (max-width: 900px) {
+            .sidebar { transform: translateX(-100%); z-index:850; }
+            .sidebar.open { transform: translateX(0); box-shadow:20px 0 60px rgba(0,0,0,.5); }
+            .main { margin-left:0; padding:calc(var(--header-h)+20px) 20px 100px 20px; }
+            .hamburger { display:flex; align-items:center; justify-content:center; }
+            .cover-section h1 { font-size:2.4rem; }
+        }
+
+        /* ═══════════════════ PRINT ═══════════════════ */
+        @media print {
+            :root { --bg-root:#fff; --bg-surface:#fff; --bg-card:#fff; --bg-elevated:#f5f5f8;
+                    --bg-code:#f5f5f8; --text:#111; --text-dim:#555; --text-muted:#888;
+                    --border:#ddd; --border-subtle:#eee; }
+            .topbar, .sidebar, .back-to-top, #progress { display:none!important; }
+            .main { margin-left:0; padding:0; max-width:none; }
+            body { font-size:9.5pt; }
+            .cover-section { min-height:auto; padding:4cm 2cm; page-break-after:always; }
+            .cover-section h1 { -webkit-text-fill-color:var(--accent-1); font-size:2.5rem; }
+            .day-section { break-inside:avoid; border:1px solid #ddd; }
+            pre { break-inside:avoid; font-size:8pt; }
+            h3 { break-after:avoid; }
+            .concept,.takeaway { break-inside:avoid; }
+            p code, li code, td code { color:#333; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════ PROGRESS BAR ═══════════ -->
+<div id="progress"></div>
+
+<!-- ═══════════ TOP BAR ═══════════ -->
+<header class="topbar">
+    <button class="hamburger" id="menuBtn" aria-label="Toggle navigation">&#9776;</button>
+    <div class="logo">Agentic AI <span>Notes</span></div>
+    <div class="section-label" id="sectionLabel"></div>
+</header>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<nav class="sidebar" id="sidebar">
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-1)"></span>WEEK 1</div>
+        <a href="#week1" class="nav-link">Overview</a>
+        <a href="#w1d1" class="nav-link">Environment &amp; API Calls</a>
+        <a href="#w1d3" class="nav-link">Multi-Model &amp; LLM-as-Judge</a>
+        <a href="#w1d4" class="nav-link">System Prompts &amp; Digital Twin</a>
+        <a href="#w1d5" class="nav-link">Tools &amp; Agent Loop</a>
+        <a href="#w1extra" class="nav-link">Checklist Agent</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-2)"></span>WEEK 2</div>
+        <a href="#week2" class="nav-link">Overview</a>
+        <a href="#w2d1" class="nav-link">Agent, Runner &amp; Memory</a>
+        <a href="#w2d2" class="nav-link">Multi-Agent Orchestration</a>
+        <a href="#w2d3" class="nav-link">Structured Outputs &amp; Guardrails</a>
+        <a href="#w2d4" class="nav-link">Deep Research Agent</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-3)"></span>WEEK 3</div>
+        <a href="#week3" class="nav-link">CrewAI Framework</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-4)"></span>WEEK 4</div>
+        <a href="#week4" class="nav-link">Overview</a>
+        <a href="#w4d1" class="nav-link">Building Blocks</a>
+        <a href="#w4d2" class="nav-link">LangGraph &amp; Deep Agents</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-5)"></span>WEEK 5</div>
+        <a href="#week5" class="nav-link">Frameworks Comparison</a>
+        <a href="#w5d5" class="nav-link">Agent Loop Orchestrator</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--accent-6)"></span>WEEK 6</div>
+        <a href="#week6" class="nav-link">Overview</a>
+        <a href="#w6d1" class="nav-link">Using MCP Servers</a>
+        <a href="#w6d2" class="nav-link">Building Your Own</a>
+    </div>
+    <div class="nav-group">
+        <div class="nav-group-title"><span class="dot" style="background:var(--text-muted)"></span>REFERENCE</div>
+        <a href="#ref" class="nav-link">Patterns &amp; Comparisons</a>
+        <a href="#ref-cheat" class="nav-link">Code Cheat Sheet</a>
+    </div>
+</nav>
+
+<!-- ═══════════ BACK TO TOP ═══════════ -->
+<button class="back-to-top" id="topBtn" aria-label="Back to top">&#8593;</button>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+<!-- ════════════════════════ COVER ════════════════════════ -->
+<section class="cover-section" id="cover">
+    <h1>Agentic AI</h1>
+    <div class="subtitle">Complete Course Notes — From Foundations to Production Agents</div>
+    <div class="cover-pills">
+        <span>Foundations</span>
+        <span>OpenAI Agents SDK</span>
+        <span>CrewAI</span>
+        <span>LangChain / LangGraph</span>
+        <span>Agent Frameworks</span>
+        <span>MCP</span>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                       WEEK 1 — FOUNDATIONS                       -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-1" id="week1">
+<div class="week-title">
+    <h2><span class="badge">WEEK 1</span> Foundations</h2>
+    <div class="week-desc">Environment Setup · LLM API Calls · System Prompts · Tools · Agent Loops · Digital Twin Project</div>
+</div>
+
+<div class="day-section" id="w1d1">
+<h3>Day 1–2: Environment Setup &amp; First API Calls</h3>
+
+<div class="concept">
+    <div class="concept-title">Core Setup</div>
+    <p>The project uses <code>python-dotenv</code> to load API keys from a <code>.env</code> file and the <strong>OpenAI Python SDK</strong> to make LLM calls. Even non-OpenAI providers (Gemini, DeepSeek, Ollama) use the same OpenAI-compatible interface.</p>
+</div>
+
+<h4>Loading Environment Variables</h4>
+<pre><code><span class="kw">from</span> dotenv <span class="kw">import</span> load_dotenv
+<span class="kw">import</span> os
+
+load_dotenv(override=<span class="dc">True</span>)  <span class="cm"># Loads .env file into os.environ</span>
+
+<span class="cm"># Verify your key is set</span>
+api_key = os.getenv(<span class="st">'OPENAI_API_KEY'</span>)
+<span class="kw">if</span> api_key:
+    <span class="fn">print</span>(f<span class="st">"Key exists and begins {api_key[:8]}"</span>)
+</code></pre>
+
+<h4>Making Your First LLM Call</h4>
+<pre><code><span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+
+openai = OpenAI()  <span class="cm"># Uses OPENAI_API_KEY from env</span>
+
+<span class="cm"># Messages are a list of dicts with 'role' and 'content'</span>
+messages = [{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: <span class="st">"Tell me a fun fact"</span>}]
+
+response = openai.chat.completions.create(
+    model=<span class="st">"gpt-5.4-nano"</span>,
+    messages=messages
+)
+<span class="fn">print</span>(response.choices[0].message.content)
+</code></pre>
+
+<h4>Using Non-OpenAI Providers (OpenAI-Compatible Endpoints)</h4>
+<pre><code><span class="cm"># Same OpenAI class, different base_url and key</span>
+gemini = OpenAI(
+    api_key=os.getenv(<span class="st">"GEMINI_API_KEY"</span>),
+    base_url=<span class="st">"https://generativelanguage.googleapis.com/v1beta/openai/"</span>
+)
+
+response = gemini.chat.completions.create(
+    model=<span class="st">"gemini-3.5-flash"</span>,
+    messages=messages
+)
+</code></pre>
+
+<div class="concept">
+    <div class="concept-title">OpenAI-Compatible Endpoints</div>
+    <p>Most LLM providers offer endpoints that mimic the OpenAI API. You only need to change <code>base_url</code> and <code>api_key</code>.</p>
+</div>
+
+<table>
+    <tr><th>Provider</th><th>Base URL</th></tr>
+    <tr><td>Anthropic</td><td><code>https://api.anthropic.com/v1/</code></td></tr>
+    <tr><td>Google Gemini</td><td><code>https://generativelanguage.googleapis.com/v1beta/openai/</code></td></tr>
+    <tr><td>DeepSeek</td><td><code>https://api.deepseek.com/v1</code></td></tr>
+    <tr><td>Groq</td><td><code>https://api.groq.com/openai/v1</code></td></tr>
+    <tr><td>Grok (xAI)</td><td><code>https://api.x.ai/v1</code></td></tr>
+    <tr><td>OpenRouter</td><td><code>https://openrouter.ai/api/v1</code></td></tr>
+    <tr><td>Ollama (local)</td><td><code>http://localhost:11434/v1</code></td></tr>
+</table>
+</div>
+
+<!-- Day 3 -->
+<div class="day-section" id="w1d3">
+<h3>Day 3: Multi-Model Competition &amp; LLM-as-Judge</h3>
+
+<div class="concept">
+    <div class="concept-title">Agentic Design Pattern: Multi-Model Evaluation</div>
+    <p>Send the same question to multiple LLMs, collect their answers, then use another LLM (the "judge") to rank them. This is a real-world pattern for improving response quality.</p>
+</div>
+
+<h4>Collecting Answers from Multiple Models</h4>
+<pre><code>competitors = []
+answers = []
+
+<span class="kw">def</span> <span class="fn">record</span>(model_name, answer):
+    competitors.append(model_name)
+    answers.append(answer)
+
+<span class="cm"># Call each provider...</span>
+response = openai.chat.completions.create(model=<span class="st">"gpt-5.4-nano"</span>, messages=messages)
+record(<span class="st">"gpt-5.4-nano"</span>, response.choices[0].message.content)
+</code></pre>
+
+<h4>LLM-as-Judge Pattern</h4>
+<pre><code><span class="cm"># Concatenate all answers with labels</span>
+together = <span class="st">""</span>
+<span class="kw">for</span> index, answer <span class="kw">in</span> <span class="fn">enumerate</span>(answers):
+    together += f<span class="st">"# Response from competitor {index+1}\n\n"</span> + answer + <span class="st">"\n\n"</span>
+
+<span class="cm"># Build a judge prompt that asks for JSON ranking</span>
+judge = f<span class="st">"""You are judging a competition between {len(competitors)} competitors.
+Respond with JSON only: {{"results": ["best", "second best", ...]}}
+{together}"""</span>
+
+<span class="cm"># Parse the JSON result</span>
+results_dict = json.loads(results)
+ranks = results_dict[<span class="st">"results"</span>]
+<span class="kw">for</span> index, result <span class="kw">in</span> <span class="fn">enumerate</span>(ranks):
+    <span class="fn">print</span>(f<span class="st">"Rank {index+1}: {competitors[int(result)-1]}"</span>)
+</code></pre>
+</div>
+
+<!-- Day 4 -->
+<div class="day-section" id="w1d4">
+<h3>Day 4: System Prompts, Conversation History &amp; Digital Twin</h3>
+
+<div class="concept">
+    <div class="concept-title">Three Key Concepts</div>
+    <ul>
+        <li><strong>System Prompt</strong> — Describes the AI's role and context for the conversation.</li>
+        <li><strong>Conversation History</strong> — The complete conversation so far, passed as a list of messages.</li>
+        <li><strong>Illusion of Memory</strong> — Every LLM call is <em>stateless</em>. We re-send the entire history each time.</li>
+    </ul>
+</div>
+
+<h4>System Prompt + Conversation History</h4>
+<pre><code>messages = [
+    {<span class="st">"role"</span>: <span class="st">"system"</span>, <span class="st">"content"</span>: <span class="st">"You are a snarky, witty assistant"</span>},
+    {<span class="st">"role"</span>: <span class="st">"user"</span>,   <span class="st">"content"</span>: <span class="st">"Hi, my name is Ed"</span>},
+    {<span class="st">"role"</span>: <span class="st">"assistant"</span>, <span class="st">"content"</span>: <span class="st">"Well hi there, Ed."</span>},
+    {<span class="st">"role"</span>: <span class="st">"user"</span>,   <span class="st">"content"</span>: <span class="st">"What's my name?"</span>},  <span class="cm"># It "remembers" via history</span>
+]
+</code></pre>
+
+<h4>Building a Digital Twin Chat</h4>
+<pre><code><span class="kw">from</span> pypdf <span class="kw">import</span> PdfReader
+<span class="kw">import</span> gradio <span class="kw">as</span> gr
+
+reader = PdfReader(<span class="st">"twin/linkedin.pdf"</span>)
+linkedin = <span class="st">""</span>
+<span class="kw">for</span> page <span class="kw">in</span> reader.pages:
+    text = page.extract_text()
+    <span class="kw">if</span> text:
+        linkedin += text
+
+system_prompt = f<span class="st">"""You are a digital twin on a website.
+Here are the person's details: {summary}
+Here is their LinkedIn: {linkedin}
+Be professional and engaging."""</span>
+
+<span class="kw">def</span> <span class="fn">chat</span>(message, history):
+    messages = [{<span class="st">"role"</span>: <span class="st">"system"</span>, <span class="st">"content"</span>: system_prompt}] \
+             + history + [{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: message}]
+    response = openai.chat.completions.create(model=<span class="st">"gpt-5.4-mini"</span>, messages=messages)
+    <span class="kw">return</span> response.choices[0].message.content
+
+gr.ChatInterface(chat).launch(inbrowser=<span class="dc">True</span>)
+</code></pre>
+</div>
+
+<!-- Day 5 -->
+<div class="day-section" id="w1d5">
+<h3>Day 5: Tools &amp; The Agent Loop</h3>
+
+<div class="concept">
+    <div class="concept-title">What is a Tool?</div>
+    <p>A <strong>tool</strong> is a Python function the LLM can request to call. You describe it with a JSON schema. When the model wants to use a tool, it returns <code>finish_reason="tool_calls"</code> instead of text.</p>
+</div>
+
+<h4>Step 1: Define the Function and its JSON Schema</h4>
+<pre><code><span class="kw">def</span> <span class="fn">record_email_tool</span>(email):
+    <span class="kw">with</span> <span class="fn">open</span>(<span class="st">"emails.txt"</span>, <span class="st">"a"</span>) <span class="kw">as</span> f:
+        f.write(email + <span class="st">"\n"</span>)
+    <span class="kw">return</span> <span class="st">"Email received"</span>
+
+record_email_tool_json = {
+    <span class="st">"name"</span>: <span class="st">"record_email_tool"</span>,
+    <span class="st">"description"</span>: <span class="st">"Record a user's email address"</span>,
+    <span class="st">"parameters"</span>: {
+        <span class="st">"type"</span>: <span class="st">"object"</span>,
+        <span class="st">"properties"</span>: {
+            <span class="st">"email"</span>: {<span class="st">"type"</span>: <span class="st">"string"</span>, <span class="st">"description"</span>: <span class="st">"The email address"</span>}
+        },
+        <span class="st">"required"</span>: [<span class="st">"email"</span>],
+        <span class="st">"additionalProperties"</span>: <span class="dc">False</span>
+    }
+}
+
+tools = [{<span class="st">"type"</span>: <span class="st">"function"</span>, <span class="st">"function"</span>: record_email_tool_json}]
+</code></pre>
+
+<h4>Step 2: The Agent Loop (while loop)</h4>
+<pre><code><span class="kw">def</span> <span class="fn">chat</span>(message, history):
+    messages = [{<span class="st">"role"</span>: <span class="st">"system"</span>, <span class="st">"content"</span>: system_prompt}] + history \
+             + [{<span class="st">"role"</span>: <span class="st">"user"</span>, <span class="st">"content"</span>: message}]
+    response = openai.chat.completions.create(
+        model=<span class="st">"gpt-5.4-mini"</span>, messages=messages, tools=tools)
+
+    <span class="cm"># THE AGENT LOOP</span>
+    <span class="kw">while</span> response.choices[0].finish_reason == <span class="st">"tool_calls"</span>:
+        message = response.choices[0].message
+        messages.append(message)
+        <span class="kw">for</span> tool_call <span class="kw">in</span> message.tool_calls:
+            args = json.loads(tool_call.function.arguments)
+            result = record_email_tool(**args)
+            messages.append({
+                <span class="st">"role"</span>: <span class="st">"tool"</span>,
+                <span class="st">"content"</span>: result,
+                <span class="st">"tool_call_id"</span>: tool_call.id
+            })
+        response = openai.chat.completions.create(
+            model=<span class="st">"gpt-5.4-mini"</span>, messages=messages, tools=tools)
+
+    <span class="kw">return</span> response.choices[0].message.content
+</code></pre>
+
+<div class="takeaway">
+    The Agent Loop is simply a <code>while</code> loop that keeps making LLM calls as long as the model wants to use tools. When done, it returns text. This is the core mechanic of ALL agentic AI — frameworks just abstract it away.
+</div>
+
+<h4>Dynamic Tool Dispatch with globals()</h4>
+<pre><code><span class="kw">def</span> <span class="fn">handle_tool_calls</span>(tool_calls):
+    results = []
+    <span class="kw">for</span> tool_call <span class="kw">in</span> tool_calls:
+        tool_name = tool_call.function.name
+        arguments = json.loads(tool_call.function.arguments)
+        tool = globals().get(tool_name)
+        result = tool(**arguments) <span class="kw">if</span> tool <span class="kw">else</span> <span class="st">"No tool found"</span>
+        results.append({<span class="st">"role"</span>: <span class="st">"tool"</span>, <span class="st">"content"</span>: json.dumps(result),
+                        <span class="st">"tool_call_id"</span>: tool_call.id})
+    <span class="kw">return</span> results
+</code></pre>
+</div>
+
+<!-- Extra -->
+<div class="day-section" id="w1extra">
+<h3>Extra: Visible Agent Loop with Checklist Tools</h3>
+
+<div class="concept">
+    <div class="concept-title">Making the Loop Visible</div>
+    <p>Uses the <code>rich</code> library for formatted terminal output and a checklist pattern: the LLM creates a checklist, works through items, and marks each complete via tool calls.</p>
+</div>
+
+<pre><code><span class="kw">from</span> rich.console <span class="kw">import</span> Console
+
+checklist = []
+completed = []
+
+<span class="kw">def</span> <span class="fn">create_checklist</span>(descriptions: list[str]) -&gt; str:
+    checklist.extend(descriptions)
+    completed.extend([<span class="dc">False</span>] * <span class="fn">len</span>(descriptions))
+    <span class="kw">return</span> get_checklist_report()
+
+<span class="kw">def</span> <span class="fn">mark_complete</span>(index: int, completion_notes: str) -&gt; str:
+    completed[index - 1] = <span class="dc">True</span>
+    <span class="kw">return</span> get_checklist_report()
+
+<span class="kw">def</span> <span class="fn">loop</span>(messages):
+    response = openai.chat.completions.create(
+        model=<span class="st">"gpt-5.5"</span>, messages=messages, tools=tools)
+    <span class="kw">while</span> response.choices[0].finish_reason == <span class="st">"tool_calls"</span>:
+        message = response.choices[0].message
+        results = handle_tool_calls(message.tool_calls)
+        messages.append(message)
+        messages.extend(results)
+        response = openai.chat.completions.create(
+            model=<span class="st">"gpt-5.5"</span>, messages=messages, tools=tools)
+    Console().print(response.choices[0].message.content)
+</code></pre>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                    WEEK 2 — OPENAI AGENTS SDK                    -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-2" id="week2">
+<div class="week-title">
+    <h2><span class="badge">WEEK 2</span> OpenAI Agents SDK</h2>
+    <div class="week-desc">Agent · Runner · Tracing · Streaming · @function_tool · Memory · Orchestration · Structured Outputs · Guardrails · Deep Research</div>
+</div>
+
+<div class="day-section" id="w2d1">
+<h3>Day 1: Agent, Runner, Tools &amp; Memory</h3>
+
+<div class="concept">
+    <div class="concept-title">The Three Core Primitives</div>
+    <ul>
+        <li><strong>Agent</strong> — Wraps an LLM with a name, instructions, model, and optional tools.</li>
+        <li><strong>Runner</strong> — Executes the agent loop. <code>Runner.run()</code> loops through tool calls automatically.</li>
+        <li><strong>trace</strong> — Wraps a run for observability; visible at <code>platform.openai.com/traces</code>.</li>
+    </ul>
+</div>
+
+<h4>Creating and Running an Agent</h4>
+<pre><code><span class="kw">from</span> agents <span class="kw">import</span> Agent, Runner, trace, function_tool
+
+agent = Agent(name=<span class="st">"Jokester"</span>, instructions=<span class="st">"You are a joke teller"</span>,
+              model=<span class="st">"gpt-5.4-mini"</span>)
+
+result = <span class="kw">await</span> Runner.run(agent, <span class="st">"Tell a joke about AI Agents"</span>)
+<span class="fn">print</span>(result.final_output)
+</code></pre>
+
+<h4>Tracing (Observability)</h4>
+<pre><code><span class="kw">with</span> trace(<span class="st">"Telling a joke"</span>):
+    result = <span class="kw">await</span> Runner.run(agent, <span class="st">"Tell a joke"</span>)
+<span class="cm"># View at: https://platform.openai.com/traces</span>
+</code></pre>
+
+<h4>Streaming</h4>
+<pre><code><span class="kw">from</span> openai.types.responses <span class="kw">import</span> ResponseTextDeltaEvent
+
+result = Runner.run_streamed(agent, input=<span class="st">"Tell 5 jokes."</span>)
+<span class="kw">async for</span> event <span class="kw">in</span> result.stream_events():
+    <span class="kw">if</span> event.type == <span class="st">"raw_response_event"</span> \
+       <span class="kw">and</span> <span class="fn">isinstance</span>(event.data, ResponseTextDeltaEvent):
+        <span class="fn">print</span>(event.data.delta, end=<span class="st">""</span>, flush=<span class="dc">True</span>)
+</code></pre>
+
+<h4>@function_tool Decorator</h4>
+<pre><code><span class="cm"># Auto-generates JSON schema from docstring + type hints!</span>
+@function_tool
+<span class="kw">def</span> <span class="fn">push_tool</span>(message: str) -&gt; str:
+    <span class="st">""" Send the given message as a push notification """</span>
+    payload = {<span class="st">"user"</span>: pushover_user, <span class="st">"token"</span>: pushover_token,
+               <span class="st">"message"</span>: message}
+    result = requests.post(pushover_url, data=payload).status_code
+    <span class="kw">return</span> f<span class="st">"Push sent with status {result}"</span>
+
+notifier = Agent(name=<span class="st">"Notifier"</span>, model=<span class="st">"gpt-5.4-mini"</span>,
+                 instructions=<span class="st">"You notify the user"</span>, tools=[push_tool])
+</code></pre>
+
+<h4>Memory / Sessions</h4>
+<pre><code><span class="cm"># Approach 1: Manual via to_input_list()</span>
+response = <span class="kw">await</span> Runner.run(agent, <span class="st">"My name is Ed."</span>)
+next_input = response.to_input_list() + [{<span class="st">"role"</span>: <span class="st">"user"</span>,
+              <span class="st">"content"</span>: <span class="st">"What's my name?"</span>}]
+response = <span class="kw">await</span> Runner.run(agent, next_input)
+
+<span class="cm"># Approach 2: SQLiteSession (built-in)</span>
+<span class="kw">from</span> agents <span class="kw">import</span> SQLiteSession
+session = SQLiteSession(<span class="st">"12345"</span>)  <span class="cm"># in-memory</span>
+response = <span class="kw">await</span> Runner.run(agent, <span class="st">"My name is Ed."</span>, session=session)
+response = <span class="kw">await</span> Runner.run(agent, <span class="st">"What's my name?"</span>, session=session)
+</code></pre>
+</div>
+
+<div class="day-section" id="w2d2">
+<h3>Day 2: Multi-Agent Orchestration</h3>
+
+<div class="concept">
+    <div class="concept-title">Two Orchestration Models</div>
+    <ul>
+        <li><strong>By Code</strong> — Python controls the flow (<code>asyncio.gather</code>, sequential calls). Predictable.</li>
+        <li><strong>By LLM</strong> — The LLM decides which agents/tools to use. Two sub-approaches: <em>via Tools</em> (agent.as_tool) and <em>via Handoffs</em>.</li>
+    </ul>
+</div>
+
+<h4>Orchestration by Code (Parallel + Picker)</h4>
+<pre><code><span class="kw">import</span> asyncio
+
+<span class="kw">with</span> trace(<span class="st">"Sales selection"</span>):
+    results = <span class="kw">await</span> asyncio.gather(
+        Runner.run(sales_agent1, message),
+        Runner.run(sales_agent2, message),
+        Runner.run(sales_agent3, message),
+    )
+    outputs = [r.final_output <span class="kw">for</span> r <span class="kw">in</span> results]
+    best = <span class="kw">await</span> Runner.run(sales_picker, <span class="st">"\n"</span>.join(outputs))
+</code></pre>
+
+<h4>Agents as Tools</h4>
+<pre><code><span class="cm"># Convert an agent into a tool</span>
+tool1 = sales_agent1.as_tool(
+    tool_name=<span class="st">"writer_1"</span>,
+    tool_description=<span class="st">"Write a sales email"</span>
+)
+
+<span class="cm"># A manager agent gets sub-agents + function tools</span>
+sales_manager = Agent(
+    name=<span class="st">"Sales Manager"</span>,
+    instructions=<span class="st">"Generate drafts, select, and send the best."</span>,
+    tools=[tool1, tool2, tool3, send_email_tool],
+    model=MODEL_NAME
+)
+</code></pre>
+
+<h4>Handoffs</h4>
+<pre><code><span class="cm"># Handoffs pass control permanently: A → B (not A → B → A)</span>
+sales_manager = Agent(
+    name=<span class="st">"Sales Manager"</span>,
+    tools=[tool1, tool2, tool3],
+    handoffs=[sales_sender],  <span class="cm"># delegates to this agent</span>
+    model=MODEL_NAME
+)
+</code></pre>
+
+<div class="takeaway">
+    <strong>Tools</strong>: A → B → A (control returns). <strong>Handoffs</strong>: A → B (control passes permanently). Tools-based delegation is generally more predictable.
+</div>
+</div>
+
+<div class="day-section" id="w2d3">
+<h3>Day 3: Multi-Model Agents, Structured Outputs &amp; Guardrails</h3>
+
+<h4>Using Any Model in 3 Steps</h4>
+<pre><code><span class="kw">from</span> openai <span class="kw">import</span> AsyncOpenAI
+<span class="kw">from</span> agents <span class="kw">import</span> OpenAIChatCompletionsModel
+
+<span class="cm"># 1. Base URL</span>
+GEMINI_BASE_URL = <span class="st">"https://generativelanguage.googleapis.com/v1beta/openai/"</span>
+<span class="cm"># 2. Async client</span>
+gemini_client = AsyncOpenAI(base_url=GEMINI_BASE_URL, api_key=google_api_key)
+<span class="cm"># 3. Model object</span>
+gemini_model = OpenAIChatCompletionsModel(
+    model=<span class="st">"gemini-3.1-flash-lite"</span>, openai_client=gemini_client)
+
+agent = Agent(name=<span class="st">"Gemini Agent"</span>, model=gemini_model, instructions=<span class="st">"..."</span>)
+</code></pre>
+
+<h4>Structured Outputs with Pydantic</h4>
+<pre><code><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+
+<span class="kw">class</span> <span class="fn">EmailReview</span>(BaseModel):
+    is_professional: bool = Field(description=<span class="st">"Whether professional"</span>)
+    number_of_sentences: int = Field(description=<span class="st">"Sentence count"</span>)
+    contains_placeholders: bool = Field(description=<span class="st">"Has placeholders"</span>)
+
+checker = Agent(name=<span class="st">"Checker"</span>, instructions=<span class="st">"Review sales emails"</span>,
+               model=<span class="st">"gpt-5.4-mini"</span>, output_type=EmailReview)
+
+result = <span class="kw">await</span> Runner.run(checker, email_text)
+review = result.final_output  <span class="cm"># An EmailReview instance!</span>
+<span class="fn">print</span>(review.is_professional)
+</code></pre>
+
+<h4>Output Guardrails</h4>
+<pre><code><span class="kw">from</span> agents <span class="kw">import</span> output_guardrail, GuardrailFunctionOutput
+
+@output_guardrail
+<span class="kw">async def</span> <span class="fn">email_guardrail</span>(ctx, agent, message):
+    result = <span class="kw">await</span> Runner.run(checker, message, context=ctx.context)
+    review = result.final_output
+    is_problem = review.contains_placeholders <span class="kw">or not</span> review.is_professional
+    <span class="kw">return</span> GuardrailFunctionOutput(
+        output_info={<span class="st">"review"</span>: review},
+        tripwire_triggered=is_problem
+    )
+
+agent = Agent(..., output_guardrails=[email_guardrail])
+</code></pre>
+
+<div class="concept">
+    <div class="concept-title">Guardrails Gotcha</div>
+    <p><strong>Input guardrails</strong> only run on the first input to the first agent. <strong>Output guardrails</strong> only run on the final output of the last agent. Guardrails on intermediate agents are never triggered.</p>
+</div>
+</div>
+
+<div class="day-section" id="w2d4">
+<h3>Day 4: Deep Research Agent</h3>
+
+<div class="concept">
+    <div class="concept-title">Architecture: 4 Specialized Agents</div>
+    <ol>
+        <li><strong>Planner</strong> → Produces a list of web searches (Structured Output).</li>
+        <li><strong>Search</strong> → Executes each search using <code>WebSearchTool()</code>.</li>
+        <li><strong>Writer</strong> → Compiles results into a comprehensive markdown report.</li>
+        <li><strong>Email</strong> → Converts the report to HTML and sends it.</li>
+    </ol>
+</div>
+
+<pre><code><span class="kw">class</span> <span class="fn">WebSearchItem</span>(BaseModel):
+    reason: str = Field(description=<span class="st">"Why this search matters"</span>)
+    query: str = Field(description=<span class="st">"The search term"</span>)
+
+<span class="kw">class</span> <span class="fn">WebSearchPlan</span>(BaseModel):
+    searches: list[WebSearchItem]
+
+<span class="kw">class</span> <span class="fn">ReportData</span>(BaseModel):
+    short_summary: str
+    markdown_report: str
+    follow_up_questions: list[str]
+
+<span class="cm"># Orchestrate by code: plan → search in parallel → write → email</span>
+<span class="kw">with</span> trace(<span class="st">"Research trace"</span>):
+    search_results = <span class="kw">await</span> run_searches(query)
+    report = <span class="kw">await</span> write_report(query, search_results)
+    <span class="kw">await</span> send_report_email(report)
+</code></pre>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                       WEEK 3 — CREWAI                           -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-3" id="week3">
+<div class="week-title">
+    <h2><span class="badge">WEEK 3</span> CrewAI</h2>
+    <div class="week-desc">Role-Based Multi-Agent Framework · Tasks · Tools · Crews · Reference Projects</div>
+</div>
+
+<div class="day-section">
+<h3>CrewAI Framework Overview</h3>
+
+<div class="concept">
+    <div class="concept-title">CrewAI Core Concepts</div>
+    <ul>
+        <li><strong>Crew</strong> — A team of agents working together on a set of tasks.</li>
+        <li><strong>Agent</strong> — Defined with a <em>role</em>, <em>goal</em>, <em>backstory</em>, and optional <em>tools</em>.</li>
+        <li><strong>Task</strong> — A specific assignment for an agent with a description and expected output.</li>
+        <li><strong>Process</strong> — Sequential or hierarchical task execution.</li>
+    </ul>
+</div>
+
+<h4>Installation &amp; Project Setup</h4>
+<pre><code><span class="cm"># Install as a UV tool (pinned version)</span>
+uv tool install crewai==1.14.4
+
+<span class="cm"># Create a new crew project</span>
+crewai create crew my_project
+
+<span class="cm"># Run the crew</span>
+crewai run
+</code></pre>
+
+<h4>CrewAI Project Structure</h4>
+<pre><code>my_project/
+├── src/my_project/
+│   ├── config/
+│   │   ├── agents.yaml   <span class="cm"># Agent definitions (role, goal, backstory)</span>
+│   │   └── tasks.yaml    <span class="cm"># Task definitions (description, expected_output)</span>
+│   ├── crew.py           <span class="cm"># Crew assembly (@crew, @agent, @task)</span>
+│   ├── tools/            <span class="cm"># Custom tool implementations</span>
+│   └── main.py           <span class="cm"># Entry point</span>
+└── pyproject.toml
+</code></pre>
+
+<h4>Reference Projects</h4>
+<table>
+    <tr><th>Project</th><th>Description</th><th>Key Concepts</th></tr>
+    <tr><td><strong>researcher</strong></td><td>Web research and report generation</td><td>SerperDevTool, sequential tasks</td></tr>
+    <tr><td><strong>debate</strong></td><td>Multi-agent debate on a topic</td><td>Agent roles, argumentation</td></tr>
+    <tr><td><strong>coder</strong></td><td>Code generation in Docker sandbox</td><td>Code execution, sandboxing</td></tr>
+    <tr><td><strong>stock_picker</strong></td><td>Financial analysis and recommendations</td><td>API tools, structured output</td></tr>
+    <tr><td><strong>engineering_team</strong></td><td>Full engineering workflow</td><td>Hierarchical process, Docker</td></tr>
+</table>
+
+<div class="takeaway">
+    CrewAI is an opinionated, YAML-driven framework that excels at defining multi-agent workflows with clear role separation. It abstracts the agent loop entirely — you define agents and tasks, and CrewAI handles everything.
+</div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                  WEEK 4 — LANGCHAIN & LANGGRAPH                  -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-4" id="week4">
+<div class="week-title">
+    <h2><span class="badge">WEEK 4</span> LangChain &amp; LangGraph</h2>
+    <div class="week-desc">Four Abstraction Levels · Building Blocks · LangGraph · create_agent · Deep Agents · Sidekick</div>
+</div>
+
+<div class="day-section">
+<h3>The Four Levels of Abstraction</h3>
+
+<table>
+    <tr><th>Layer</th><th>Packages</th><th>What It Gives You</th><th>Control</th></tr>
+    <tr><td>1. Building Blocks</td><td><code>langchain-core</code></td><td>Chat models, @tool, messages</td><td>Everything</td></tr>
+    <tr><td>2. Orchestration</td><td><code>langgraph</code></td><td>Graph of steps + state &amp; memory</td><td>Graph design</td></tr>
+    <tr><td>3. Agent</td><td><code>langchain</code></td><td>Prebuilt agent loop</td><td>Model, tools, prompt</td></tr>
+    <tr><td>4. Harness</td><td><code>deepagents</code></td><td>Planning, sub-agents, filesystem</td><td>Your intent</td></tr>
+</table>
+</div>
+
+<div class="day-section" id="w4d1">
+<h3>Day 1: Layer 1 — Building Blocks</h3>
+
+<h4>ChatOpenAI and invoke()</h4>
+<pre><code><span class="kw">from</span> langchain_openai <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain_core.messages <span class="kw">import</span> HumanMessage, SystemMessage, ToolMessage
+
+llm = ChatOpenAI(model=<span class="st">"gpt-5.4-mini"</span>)
+reply = llm.invoke(<span class="st">"What does it mean for an AI Agent to be autonomous?"</span>)
+<span class="fn">print</span>(reply.content)
+
+<span class="cm"># Streaming</span>
+<span class="kw">for</span> chunk <span class="kw">in</span> llm.stream(<span class="st">"Tell me a poem"</span>):
+    <span class="fn">print</span>(chunk.content, end=<span class="st">""</span>, flush=<span class="dc">True</span>)
+</code></pre>
+
+<h4>Tools with @tool Decorator</h4>
+<pre><code><span class="kw">from</span> langchain_core.tools <span class="kw">import</span> tool
+
+@tool
+<span class="kw">def</span> <span class="fn">get_share_price</span>(symbol: str) -&gt; float:
+    <span class="st">"""Return current share price for a ticker symbol."""</span>
+    fake_prices = {<span class="st">"AAPL"</span>: 241.5, <span class="st">"GOOG"</span>: 168.2}
+    <span class="kw">return</span> fake_prices.get(symbol.upper(), 0.0)
+
+<span class="cm"># Bind tools, then run the loop manually</span>
+llm_with_tools = llm.bind_tools([get_share_price])
+response = llm_with_tools.invoke(<span class="st">"Share price of Amazon?"</span>)
+<span class="fn">print</span>(response.tool_calls)
+</code></pre>
+
+<h4>Structured Output</h4>
+<pre><code><span class="kw">class</span> <span class="fn">Company</span>(BaseModel):
+    name: str = Field(description=<span class="st">"The company name"</span>)
+    ticker: str = Field(description=<span class="st">"Stock ticker"</span>)
+    founded_year: int = Field(description=<span class="st">"Year founded"</span>)
+
+structured_llm = llm.with_structured_output(Company)
+company = structured_llm.invoke(<span class="st">"Tell me about Amazon"</span>)
+<span class="fn">print</span>(company.ticker)  <span class="cm"># "AMZN"</span>
+</code></pre>
+</div>
+
+<div class="day-section" id="w4d2">
+<h3>Days 2–5: LangGraph, create_agent, Deep Agents &amp; Sidekick</h3>
+
+<div class="concept">
+    <div class="concept-title">LangGraph (Layer 2)</div>
+    <p>A graph-based orchestration engine. Define <strong>nodes</strong> (functions) and <strong>edges</strong> (transitions, including conditional). State flows through the graph enabling loops, branches, and checkpoints.</p>
+</div>
+
+<div class="concept">
+    <div class="concept-title">create_agent (Layer 3)</div>
+    <p>A prebuilt agent loop from LangChain — equivalent to <code>Runner.run()</code>. Supply a model, tools, and prompt.</p>
+</div>
+
+<div class="concept">
+    <div class="concept-title">Deep Agents (Layer 4) &amp; Sidekick Project</div>
+    <p>An opinionated harness with planning, sub-agents, and filesystem access. The <strong>Sidekick</strong> capstone combines LangGraph with tools, state management, and a Gradio UI.</p>
+</div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                   WEEK 5 — AGENT FRAMEWORKS                      -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-5" id="week5">
+<div class="week-title">
+    <h2><span class="badge">WEEK 5</span> Agent Frameworks &amp; Agent Loop</h2>
+    <div class="week-desc">5 Frameworks · Same Mental Model · ADK Orchestrator · Multi-Agent Coordination · Browser QA</div>
+</div>
+
+<div class="day-section">
+<h3>One Agent, Five Frameworks</h3>
+
+<div class="concept">
+    <div class="concept-title">Core Idea</div>
+    <p>Build the <em>exact same worker agent</em> in five different frameworks, proving they share one mental model. On Day 5, an ADK orchestrator coordinates all five workers to build a language-learning arcade.</p>
+</div>
+
+<table>
+    <tr><th>Day</th><th>Framework</th><th>Key Idiom</th></tr>
+    <tr><td>1</td><td>Google ADK</td><td>LlmAgent, InMemoryRunner</td></tr>
+    <tr><td>2</td><td>Strands / Pydantic AI</td><td>Strands worker</td></tr>
+    <tr><td>3</td><td>Microsoft AutoGen / Agno</td><td>MAF worker</td></tr>
+    <tr><td>4</td><td>Mastra (TypeScript)</td><td>Node-based agent</td></tr>
+    <tr><td>5</td><td>All combined</td><td>Agent Loop orchestrator (ADK)</td></tr>
+</table>
+</div>
+
+<div class="day-section" id="w5d5">
+<h3>Day 5: The Agent Loop Orchestrator</h3>
+
+<div class="concept">
+    <div class="concept-title">Orchestrator Tools</div>
+    <ul>
+        <li><code>author_style</code> — Writes shared CSS for the arcade theme.</li>
+        <li><code>launch_worker(framework, objective)</code> — Starts a worker subprocess.</li>
+        <li><code>wait_for_team</code> — Blocks until all workers finish; paints live board.</li>
+        <li><code>test_game(slug)</code> — Plays a game via Playwright MCP (browser QA).</li>
+        <li><code>relaunch_worker(framework, problem)</code> — Sends a worker back to fix a bug.</li>
+        <li><code>build_hub</code> — Writes the themed index.html home page.</li>
+    </ul>
+</div>
+
+<pre><code><span class="cm"># Entry point</span>
+uv run agent_loop.py
+uv run agent_loop.py --language French
+uv run agent_loop.py --skip agno mastra
+uv run agent_loop.py --dry-run
+</code></pre>
+
+<div class="takeaway">
+    The same inner loop (read board, plan, work, check off) written four times becomes an <strong>outer loop</strong> run by a coordinating agent. Workers are unchanged — they receive a task ID and build to a shared board. When agents share the same shape, they compose without special glue.
+</div>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                       WEEK 6 — MCP                               -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block week-6" id="week6">
+<div class="week-title">
+    <h2><span class="badge">WEEK 6</span> Model Context Protocol (MCP)</h2>
+    <div class="week-desc">MCP Concepts · Local Servers (Stdio) · Remote Servers (HTTP) · Playwright · Filesystem · Building Your Own</div>
+</div>
+
+<div class="day-section" id="w6d1">
+<h3>Day 1: Understanding &amp; Using MCP Servers</h3>
+
+<div class="concept">
+    <div class="concept-title">What is MCP?</div>
+    <p>The <strong>Model Context Protocol</strong> lets an agent use tools that someone else wrote and runs as a separate program. An MCP <em>server</em> exposes tools; an MCP <em>client</em> discovers and calls them.</p>
+</div>
+
+<div class="concept">
+    <div class="concept-title">Two Types of MCP Servers</div>
+    <ul>
+        <li><strong>Local (Stdio)</strong> — Spawned as a subprocess. Use <code>MCPServerStdio</code>. Started with <code>uvx</code> or <code>npx</code>.</li>
+        <li><strong>Remote (HTTP)</strong> — Hosted services. Use <code>MCPServerStreamableHttp</code>. Nothing to install.</li>
+    </ul>
+</div>
+
+<h4>Local MCP Server (Fetch)</h4>
+<pre><code><span class="kw">from</span> agents.mcp <span class="kw">import</span> MCPServerStdio
+
+fetch_params = {<span class="st">"command"</span>: <span class="st">"uvx"</span>,
+                <span class="st">"args"</span>: [<span class="st">"--with"</span>, <span class="st">"mcp&lt;2"</span>, <span class="st">"mcp-server-fetch"</span>]}
+
+<span class="kw">async with</span> MCPServerStdio(params=fetch_params,
+                          client_session_timeout_seconds=60) <span class="kw">as</span> server:
+    tools = <span class="kw">await</span> server.list_tools()
+</code></pre>
+
+<h4>Playwright MCP Server (Browser Automation)</h4>
+<pre><code>playwright_params = {<span class="st">"command"</span>: <span class="st">"npx"</span>,
+                     <span class="st">"args"</span>: [<span class="st">"@playwright/mcp@latest"</span>]}
+<span class="cm"># Provides: browser_navigate, browser_click, browser_screenshot...</span>
+</code></pre>
+
+<h4>Filesystem MCP Server (Sandboxed)</h4>
+<pre><code>sandbox_path = os.path.abspath(<span class="st">"sandbox"</span>)
+files_params = {<span class="st">"command"</span>: <span class="st">"npx"</span>,
+    <span class="st">"args"</span>: [<span class="st">"-y"</span>, <span class="st">"@modelcontextprotocol/server-filesystem"</span>,
+            sandbox_path]}
+<span class="cm"># Provides: read_file, write_file, list_directory</span>
+</code></pre>
+
+<h4>Combining Multiple MCP Servers with an Agent</h4>
+<pre><code>TASK = <span class="st">"Find a recipe, then summarize it to banoffee.md"</span>
+
+<span class="kw">async with</span> MCPServerStdio(params=files_params, ...) <span class="kw">as</span> mcp_files:
+    <span class="kw">async with</span> MCPServerStdio(params=playwright_params, ...) <span class="kw">as</span> mcp_browser:
+        agent = Agent(
+            name=<span class="st">"investigator"</span>,
+            instructions=<span class="st">"Browse the web and write files."</span>,
+            model=<span class="st">"gpt-5.4-mini"</span>,
+            mcp_servers=[mcp_files, mcp_browser]
+        )
+        <span class="kw">with</span> trace(<span class="st">"investigate"</span>):
+            result = <span class="kw">await</span> Runner.run(agent, TASK, max_turns=20)
+</code></pre>
+
+<h4>Remote MCP Server (Context7)</h4>
+<pre><code><span class="kw">from</span> agents.mcp <span class="kw">import</span> MCPServerStreamableHttp
+
+params = {<span class="st">"url"</span>: <span class="st">"https://mcp.context7.com/mcp"</span>, <span class="st">"timeout"</span>: 60}
+
+<span class="kw">async with</span> MCPServerStreamableHttp(name=<span class="st">"Context7"</span>, params=params) <span class="kw">as</span> server:
+    agent = Agent(name=<span class="st">"Expert"</span>,
+                  instructions=<span class="st">"Use Context7 to answer."</span>,
+                  mcp_servers=[server], model=<span class="st">"gpt-4o-mini"</span>)
+    result = <span class="kw">await</span> Runner.run(agent, question)
+</code></pre>
+
+<div class="concept">
+    <div class="concept-title">Windows Jupyter Fix</div>
+    <p>On Windows, MCP servers crash in Jupyter because stderr has no file descriptor. Fix:</p>
+</div>
+<pre><code><span class="kw">import</span> functools, subprocess
+<span class="kw">import</span> agents.mcp.server
+
+agents.mcp.server.stdio_client = functools.partial(
+    agents.mcp.server.stdio_client, errlog=subprocess.DEVNULL)
+</code></pre>
+</div>
+
+<div class="day-section" id="w6d2">
+<h3>Day 2: Building Your Own MCP Server</h3>
+
+<div class="concept">
+    <div class="concept-title">Custom MCP Servers</div>
+    <p>Expose any Python module as an MCP server. The course wraps a stock trading account backend and connects an agent to it, enabling trading via the standardized MCP protocol.</p>
+</div>
+
+<h4>MCP Marketplaces</h4>
+<ul>
+    <li><strong>Glama</strong>: <code>https://glama.ai/mcp</code></li>
+    <li><strong>Smithery</strong>: <code>https://smithery.ai/servers</code></li>
+</ul>
+</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<!--                      QUICK REFERENCE                             -->
+<!-- ═══════════════════════════════════════════════════════════════ -->
+<section class="week-block" id="ref" style="--week-color: var(--text-muted);">
+<div class="week-title">
+    <h2><span class="badge" style="background:var(--text-muted)">REF</span> Quick Reference — Patterns &amp; Comparisons</h2>
+</div>
+
+<div class="day-section">
+<h3>Agentic Design Patterns</h3>
+
+<table>
+    <tr><th>Pattern</th><th>Description</th><th>Where Used</th></tr>
+    <tr><td><strong>Tool Use</strong></td><td>LLM calls external functions for real-world actions</td><td>All weeks</td></tr>
+    <tr><td><strong>Agent Loop</strong></td><td><code>while finish_reason == "tool_calls"</code></td><td>Week 1, all frameworks</td></tr>
+    <tr><td><strong>Multi-Agent</strong></td><td>Multiple specialized agents collaborate</td><td>Weeks 2–5</td></tr>
+    <tr><td><strong>Orchestration by Code</strong></td><td>Python controls which agent runs when</td><td>Weeks 2, 4, 5</td></tr>
+    <tr><td><strong>Orchestration by LLM</strong></td><td>A manager LLM decides which tools/agents to invoke</td><td>Weeks 2, 5</td></tr>
+    <tr><td><strong>LLM-as-Judge</strong></td><td>Use one LLM to evaluate/rank others</td><td>Weeks 1, 2</td></tr>
+    <tr><td><strong>Structured Output</strong></td><td>LLM outputs a Pydantic model instead of text</td><td>Weeks 2, 4</td></tr>
+    <tr><td><strong>Guardrails</strong></td><td>Pre/post checks on agent outputs</td><td>Week 2</td></tr>
+    <tr><td><strong>Deep Research</strong></td><td>Plan → Search → Synthesize → Deliver</td><td>Week 2</td></tr>
+    <tr><td><strong>MCP</strong></td><td>Standardized tool-sharing protocol</td><td>Week 6</td></tr>
+</table>
+</div>
+
+<div class="day-section">
+<h3>Framework Comparison</h3>
+
+<table>
+    <tr><th>Feature</th><th>Raw OpenAI</th><th>Agents SDK</th><th>CrewAI</th><th>LangChain</th></tr>
+    <tr><td><strong>Agent definition</strong></td><td>Manual</td><td><code>Agent()</code></td><td>YAML</td><td><code>ChatOpenAI()</code></td></tr>
+    <tr><td><strong>Tool definition</strong></td><td>JSON dict</td><td><code>@function_tool</code></td><td><code>@tool</code>/YAML</td><td><code>@tool</code></td></tr>
+    <tr><td><strong>Agent loop</strong></td><td>while loop</td><td><code>Runner.run()</code></td><td><code>crew.kickoff()</code></td><td><code>create_agent()</code></td></tr>
+    <tr><td><strong>Multi-agent</strong></td><td>Manual</td><td><code>.as_tool()</code></td><td>Crew+Tasks</td><td>LangGraph</td></tr>
+    <tr><td><strong>Memory</strong></td><td>Manual</td><td>SQLiteSession</td><td>Built-in</td><td>Checkpoints</td></tr>
+    <tr><td><strong>Structured Output</strong></td><td>JSON mode</td><td><code>output_type=</code></td><td>Pydantic</td><td><code>.with_structured_output()</code></td></tr>
+    <tr><td><strong>MCP</strong></td><td>—</td><td><code>mcp_servers=[]</code></td><td>—</td><td>Via tools</td></tr>
+</table>
+</div>
+
+<div class="day-section" id="ref-cheat">
+<h3>Essential Code Cheat Sheet</h3>
+
+<h4>The Universal Agent Loop</h4>
+<pre><code>response = llm.call(messages, tools=tools)
+<span class="kw">while</span> response.wants_tool_calls:
+    <span class="kw">for</span> call <span class="kw">in</span> response.tool_calls:
+        result = execute_tool(call)
+        messages.append(tool_result(result, call.id))
+    response = llm.call(messages, tools=tools)
+<span class="kw">return</span> response.text
+</code></pre>
+
+<h4>The Universal Message Format</h4>
+<pre><code>[
+  {<span class="st">"role"</span>: <span class="st">"system"</span>,    <span class="st">"content"</span>: <span class="st">"You are a helpful assistant..."</span>},
+  {<span class="st">"role"</span>: <span class="st">"user"</span>,      <span class="st">"content"</span>: <span class="st">"User's question"</span>},
+  {<span class="st">"role"</span>: <span class="st">"assistant"</span>, <span class="st">"content"</span>: <span class="st">"AI reply"</span>},
+  {<span class="st">"role"</span>: <span class="st">"tool"</span>,      <span class="st">"content"</span>: <span class="st">"Result"</span>, <span class="st">"tool_call_id"</span>: <span class="st">"..."</span>},
+]
+</code></pre>
+
+<h4>The Pydantic Pattern</h4>
+<pre><code><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+
+<span class="kw">class</span> <span class="fn">MyOutput</span>(BaseModel):
+    field_1: str = Field(description=<span class="st">"What this field means"</span>)
+    field_2: int = Field(description=<span class="st">"What this number represents"</span>)
+    items: list[str] = Field(description=<span class="st">"A list of items"</span>)
+
+<span class="cm"># OpenAI Agents SDK: output_type=MyOutput</span>
+<span class="cm"># LangChain: llm.with_structured_output(MyOutput)</span>
+</code></pre>
+</div>
+</section>
+
+</main><!-- end .main -->
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+<script>
+(function(){
+    const progress = document.getElementById('progress');
+    const topBtn   = document.getElementById('topBtn');
+    const menuBtn  = document.getElementById('menuBtn');
+    const sidebar  = document.getElementById('sidebar');
+    const label    = document.getElementById('sectionLabel');
+    const links    = document.querySelectorAll('.nav-link');
+    const sections = [];
+
+    // Build section list from nav links
+    links.forEach(a => {
+        const id = a.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if(el) sections.push({id, el, link:a, title:a.textContent.trim()});
+    });
+
+    // Scroll handler
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if(!ticking){ requestAnimationFrame(onScroll); ticking=true; }
+    });
+
+    function onScroll(){
+        ticking = false;
+        const scrollY = window.scrollY;
+        const docH    = document.documentElement.scrollHeight - window.innerHeight;
+        const pct     = docH > 0 ? (scrollY / docH) * 100 : 0;
+        progress.style.width = pct + '%';
+
+        // Back to top
+        topBtn.classList.toggle('visible', scrollY > 500);
+
+        // Active section
+        let current = sections[0];
+        for(const s of sections){
+            if(s.el.getBoundingClientRect().top < 120) current = s;
+        }
+        links.forEach(l => l.classList.remove('active'));
+        if(current){
+            current.link.classList.add('active');
+            label.textContent = current.title;
+            // scroll sidebar to keep active link visible
+            current.link.scrollIntoView({block:'nearest', behavior:'smooth'});
+        }
+    }
+
+    topBtn.addEventListener('click', () => window.scrollTo({top:0, behavior:'smooth'}));
+
+    // Mobile menu
+    menuBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', e => {
+        if(window.innerWidth <= 900 && !sidebar.contains(e.target) && e.target !== menuBtn){
+            sidebar.classList.remove('open');
+        }
+    });
+
+    // Close sidebar on nav click (mobile)
+    links.forEach(a => a.addEventListener('click', () => {
+        if(window.innerWidth <= 900) sidebar.classList.remove('open');
+    }));
+
+    // Initial
+    onScroll();
+})();
+</script>
+</body>
+</html>
